@@ -1,0 +1,116 @@
+# Keil MDK Build Output
+*.axf
+*.elf
+*.o
+*.d
+*.dep
+*.map
+*.hex
+*.bin
+*.lst
+*.scvd
+
+# Keil MDK Project Files
+*.uvopt
+*.uvoptx
+*.uvproj
+*.uvprojx
+*.__i
+*.crf
+*.tra
+*.lib
+*.txt
+*.dat
+
+# Object Files
+*.obj
+*.ko
+*.elf
+
+# Executables
+*.exe
+*.out
+*.app
+*.elf
+
+# Build Directories
+/build/
+/Debug/
+/Release/
+/Objects/
+/Listings/
+/.temp/
+/tmp/
+
+# IDE Configuration
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# User-specific files
+*.user
+*.userprefs
+*.VC.db
+*.VC.VC.opendb
+
+# Keil-specific
+*.bak
+*.BAK
+Listings/
+Objects/
+*.uvguiex
+
+# Compiler-generated files
+*.b
+*.bb
+*.d
+*.o
+*.o.d
+*.a
+*.so
+*.so.*
+*.dylib
+
+# CMake build directory
+cmake_build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.cmake
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Dependencies
+/Drivers/
+/Middlewares/
+
+# 但保留自己写的代码文件
+!/Core/
+!/LCDku/
+!*.c
+!*.h
+
+# STM32CubeMX generated files (可选，如果想保留则注释掉)
+# cubemx_generated/
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Editor temp files
+*.swp
+*.swo
+*~
+.#*
+
+# 保留项目配置文件
+!.gitignore
+!README.md
+!*.md
