@@ -15,17 +15,17 @@ static AppDataType g_app = {0};
 static uint8_t g_lcd_buf[20];
 
 /* ============= 前向声明（必须！） ============= */
-static void APP_PasswordVerifySuccess(void);
-static void APP_PasswordVerifyFail(void);
+static void Success(void);
+static void Fail(void);
 static void APP_UpdatePWM(uint32_t current_tick);
 static void APP_UpdateLED(uint32_t current_tick);
-static void APP_UpdateDisplay(uint32_t current_tick);
+static void APP_UpdateDisplay(uint32_t current_tick);//静态函数实现内部细节，防止意外调用
 
 /* ============= 初始化 ============= */
 void APP_Init(void)
 {
     /* 初始化密码 */
-    strcpy((char *)g_app.password.current_password, DEFAULT_PASSWORD);
+    strcpy((char *)g_app.password.current_password, Defaultnum);
     strcpy((char *)g_app.password.input_buffer, "@@@");
     g_app.password.input_count = 0;
     g_app.password.error_count = 0;
@@ -83,16 +83,16 @@ void APP_HandleKeyInput(uint8_t key_id)
                     (char *)g_app.password.current_password, 
                     PASSWORD_LENGTH) == 0) {
             /* ✓ 密码正确 */
-            APP_PasswordVerifySuccess();
+            Success();
         } else {
             /* ✗ 密码错误 */
-            APP_PasswordVerifyFail();
+            Fail();
         }
     }
 }
 
 /* ============= 密码验证成功 ============= */
-static void APP_PasswordVerifySuccess(void)
+static void Success(void)
 {
     /* 设置PWM为2KHz, 10%占空比，持续5秒 */
     g_app.pwm.frequency = VERIFY_FREQ;
@@ -111,7 +111,7 @@ static void APP_PasswordVerifySuccess(void)
 }
 
 /* ============= 密码验证失败 ============= */
-static void APP_PasswordVerifyFail(void)
+static void Fail(void)
 {
     /* 密码重置为@ */
     strcpy((char *)g_app.password.input_buffer, "@@@");
