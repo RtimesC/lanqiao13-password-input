@@ -2,6 +2,9 @@
 #include "app.h"
 #include "config.h"
 #include "gpio.h"
+#include <stdint.h>
+#include <string.h>
+#include "stm32g4xx_hal.h"
 
 static uint32_t g_key_tick = 0;
 static uint8_t g_key_old[4] = {0};  // B1-B4的上一次状态
@@ -13,7 +16,7 @@ void KEY_Init(void)
 
 void KEY_Process(void)
 {
-    if (uwTick - g_key_tick < KEY_SCAN_INTERVAL)
+    if (uwTick - g_key_tick < 20)  // 20ms扫描一次
         return;
     
     g_key_tick = uwTick;

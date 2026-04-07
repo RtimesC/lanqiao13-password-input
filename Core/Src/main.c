@@ -106,7 +106,8 @@ int main(void)
     UART_Init();           // ← 启用UART接收中断
     APP_Init();
     
-    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);  /* USER CODE END 2 */
+    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
+  /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */

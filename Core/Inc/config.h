@@ -4,12 +4,11 @@
 #define __CONFIG_H
 
 /* ============= 密码配置 ============= */
-#define DEFAULT_PASSWORD        "123"
+#define Defaultnum              "123"
 #define PASSWORD_LENGTH         3
 #define MAX_PASSWORD_ATTEMPTS   3
 
-/* ============= 时间间隔（ms） ============= */
-#define KEY_SCAN_INTERVAL       20      // 按键扫描间隔
+/* ============= 时间间隔(ms) ============= */
 #define LCD_REFRESH_INTERVAL    100     // LCD刷新间隔
 #define UART_PROCESS_INTERVAL   50      // 串口处理间隔
 
