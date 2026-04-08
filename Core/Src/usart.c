@@ -21,6 +21,8 @@
 #include "usart.h"
 
 /* USER CODE BEGIN 0 */
+#include "main.h"
+#include <string.h>
 
 /* USER CODE END 0 */
 
@@ -172,6 +174,24 @@ void UART_SendString(char *str)
     }
 }
 
+void UART_HandleCmd(char *cmd)
+{
+    char old_pwd[4];
+    char new_pwd[4];
+    if (strlen(cmd) >= 7 && cmd[3] == '-') {
+        strncpy(old_pwd, cmd, 3);
+        old_pwd[3] = '\0';
+        strncpy(new_pwd, cmd + 4, 3);
+        new_pwd[3] = '\0';
+        if (strcmp(old_pwd, current_pwd) == 0) {
+            strcpy(current_pwd, new_pwd);
+            UART_SendString("Password changed!\r\n");
+        } else {
+            UART_SendString("Wrong password!\r\n");
+        }
+    }
+}
+
 /* UART接收中断回调函数 */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
@@ -214,36 +234,3 @@ void UART_Process(void)
 }
 
 /* USER CODE END 1 */
-
-#include "main.h"
-#include <string.h>
-
-void UART_HandleCmd(char *cmd) {
-    char old_pwd[4], new_pwd[4];
-    if (strlen(cmd) >= 7 && cmd[3] == '-') {
-        strncpy(old_pwd, cmd, 3); old_pwd[3] = '\0';
-        strncpy(new_pwd, cmd + 4, 3); new_pwd[3] = '\0';
-        if (strcmp(old_pwd, current_pwd) == 0) {
-            strcpy(current_pwd, new_pwd);
-            UART_SendString("Password changed!\r\n");
-        } else {
-            UART_SendString("Wrong password!\r\n");
-        }
-    }
-}
-#include "main.h"
-#include <string.h>
-
-void UART_HandleCmd(char *cmd) {
-    char old_pwd[4], new_pwd[4];
-    if (strlen(cmd) >= 7 && cmd[3] == '-') {
-        strncpy(old_pwd, cmd, 3); old_pwd[3] = '\0';
-        strncpy(new_pwd, cmd + 4, 3); new_pwd[3] = '\0';
-        if (strcmp(old_pwd, current_pwd) == 0) {
-            strcpy(current_pwd, new_pwd);
-            UART_SendString("Password changed!\r\n");
-        } else {
-            UART_SendString("Wrong password!\r\n");
-        }
-    }
-}

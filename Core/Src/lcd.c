@@ -197,7 +197,7 @@ void LCD_SetBackColor(vu16 Color)
 *******************************************************************************/
 void LCD_ClearLine(uint8_t Line)
 {
-    LCD_DisplayStringLine(Line, "                    ");
+    LCD_DisplayStringLine(Line, (u8 *)"                    ");
 }
 /*******************************************************************************
 * Function Name  : LCD_Clear

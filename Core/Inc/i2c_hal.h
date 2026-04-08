@@ -2,6 +2,7 @@
 #define __I2C_HAL_H
 
 #include "stm32g4xx_hal.h"
+#include <stdint.h>
 
 void I2CStart(void);
 void I2CStop(void);

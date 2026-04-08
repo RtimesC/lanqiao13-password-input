@@ -1,0 +1,2 @@
+sed -i '/\/\* UART接收中断回调函数 \*\//i\
+void UART_HandleCmd(char *cmd)\n{\n    char old_pwd[4], new_pwd[4];\n    if (strlen(cmd) >= 7 && cmd[3] == '\'"'-'"') {\n        strncpy(old_pwd, cmd, 3); old_pwd[3] = '\'"'\\0'"';\n        strncpy(new_pwd, cmd + 4, 3); new_pwd[3] = '\'"'\\0'"';\n        if (strcmp(old_pwd, current_pwd) == 0) {\n            strcpy(current_pwd, new_pwd);\n            UART_SendString("Password changed!\\r\\n");\n        } else {\n            UART_SendString("Wrong password!\\r\\n");\n        }\n    }\n}\n' Core/Src/usart.c

@@ -97,6 +97,26 @@ void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 2 */
+#include "main.h"
+#include "config.h"
+#include "led.h"
+#include "pwm.h"
+#include "lcd.h"
+#include "key.h"
+#include <string.h>
+#include <stdio.h>
+#include <stdint.h>
+
+#include "main.h"
+#include "config.h"
+#include "led.h"
+#include "pwm.h"
+#include "lcd.h"
+#include "key.h"
+#include <string.h>
+#include <stdio.h>
+#include <stdint.h>
+
 
 // main.c里的全局变量拿过来引用
 extern uint8_t system_state;
@@ -239,4 +259,4 @@ void LCD_Write(uint8_t RS, uint16_t Value)
 }
 
 /* USER CODE END 2 */
-```
+

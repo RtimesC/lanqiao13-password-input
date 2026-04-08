@@ -2,6 +2,7 @@
 #define __KEY_H
 
 #include "stm32g4xx_hal.h"
+#include <stdint.h>
 
 extern uint8_t key_down;
 
