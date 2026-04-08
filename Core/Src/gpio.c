@@ -22,6 +22,14 @@
 #include "gpio.h"
 
 /* USER CODE BEGIN 0 */
+#include "main.h"
+#include "config.h"
+#include "led.h"
+#include "pwm.h"
+#include "lcd.h"
+#include "key.h"
+#include <string.h>
+#include <stdio.h>
 
 /* USER CODE END 0 */
 
@@ -89,56 +97,127 @@ void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 2 */
-/* 按键读取函数 */
-uint8_t key_old = 0;
-uint8_t key_value = 0;
-uint8_t key_down = 0;
-uint8_t key_up = 0;
 
-void KEY_Read(void)
+// main.c里的全局变量拿过来引用
+extern uint8_t system_state;
+extern char current_pwd[4];
+extern char input_pwd[4];
+extern uint32_t led1_on_time;
+extern uint32_t led2_alarm_time;
+extern uint32_t pwm_verify_time;
+extern uint8_t error_count;
+extern TIM_HandleTypeDef htim2;
+
+// --- 模块核心状态与处理函数集中放置于此处 ---
+
+void KEY_Process(void)
 {
+    static uint32_t key_tick = 0;
+    if (uwTick - key_tick < 20) return; // 20ms消抖
+    key_tick = uwTick;
+    
+    key_read(); // 发起硬件读取采集事件
 
-    if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_0) == 0)      key_value = 1;
-    else if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == 0) key_value = 2;
-    else if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == 0) key_value = 3;
-    else if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == 0) key_value = 4;
-    else key_value = 0;
-
-    if(key_value != key_old) 
-    {
-        if(key_value != 0) key_down = key_value;
-        else key_up = key_old;
+    if (system_state == 0) {
+        if (key_down >= 1 && key_down <= 3) {
+            uint8_t digit = input_pwd[key_down - 1];
+            if (digit == '@') digit = '0';
+            else digit = '0' + ((digit - '0' + 1) % 10);
+            input_pwd[key_down - 1] = digit;
+        }
+        else if (key_down == 4) {
+            if (strncmp(input_pwd, current_pwd, 3) == 0) {
+                // 如果密码正确，切换到配置2KHz高频状态并点亮LED1长亮五秒
+                system_state = 1;
+                led1_on_time = uwTick;
+                pwm_verify_time = uwTick;
+                error_count = 0;
+            } else {
+                // 如果密码错误，计错器加一；输错满三次则触发LED2警报
+                strcpy(input_pwd, "@@@");
+                error_count++;
+                if (error_count >= 3) {
+                    led2_alarm_time = uwTick; 
+                    error_count = 0;
+                }
+            }
+        }
     }
-    else 
-    {
-        key_down = 0;
-        key_up = 0;
+}
+
+void LED_Process(void)
+{
+    if (led1_on_time > 0) {
+        if (uwTick - led1_on_time < LED1_ON_DURATION) LED_TurnOn(LED1);
+        else { LED_TurnOff(LED1); led1_on_time = 0; }
     }
 
-    key_old = key_value; 
+    if (led2_alarm_time > 0) {
+        if (uwTick - led2_alarm_time < LED2_ALARM_DURATION) {
+            if (((uwTick - led2_alarm_time) / LED2_ALARM_INTERVAL) % 2 == 0)
+                LED_TurnOn(LED2);
+            else
+                LED_TurnOff(LED2);
+        } else {
+            LED_TurnOff(LED2);
+            led2_alarm_time = 0;
+        }
+    }
+}
+
+void PWM_Process(void)
+{
+    static uint8_t is_high_freq = 0; 
+    if (pwm_verify_time > 0) {
+        if (uwTick - pwm_verify_time < VERIFY_DURATION) {
+            if (!is_high_freq) {
+                PWM_SetOutput(VERIFY_FREQ, VERIFY_DUTY);
+                is_high_freq = 1;
+            }
+        } else {
+            PWM_SetOutput(NORMAL_FREQ, NORMAL_DUTY);
+            is_high_freq = 0;
+            pwm_verify_time = 0;
+            system_state = 0; 
+        }
+    } else {
+        if (is_high_freq) {
+            PWM_SetOutput(NORMAL_FREQ, NORMAL_DUTY);
+            is_high_freq = 0;
+        }
+    }
+}
+
+void LCD_Process(void)
+{
+    static uint32_t lcd_tick = 0;
+    if (uwTick - lcd_tick < LCD_REFRESH_INTERVAL) return;
+    lcd_tick = uwTick;
+    
+    char buf[20];
+    
+    if (system_state == 0) {
+        LCD_DisplayStringLine(LCD_LINE_TITLE, (uint8_t *)"      PSD        ");
+        sprintf(buf, "   %c %c %c         ", input_pwd[0], input_pwd[1], input_pwd[2]);
+        LCD_DisplayStringLine(LCD_LINE_PSW_1, (uint8_t *)buf);
+        LCD_DisplayStringLine(LCD_LINE_DUTY, (uint8_t *)"                 "); 
+    }
+    else if (system_state == 1) {
+        LCD_DisplayStringLine(LCD_LINE_TITLE, (uint8_t *)"      STA        ");
+        uint32_t f = (pwm_verify_time > 0) ? VERIFY_FREQ : NORMAL_FREQ;
+        uint32_t d = (pwm_verify_time > 0) ? VERIFY_DUTY : NORMAL_DUTY;
+        
+        sprintf(buf, "   F:%uHz         ", (unsigned int)f);
+        LCD_DisplayStringLine(LCD_LINE_FREQ, (uint8_t *)buf);
+        sprintf(buf, "   D:%u%%          ", (unsigned int)d);
+        LCD_DisplayStringLine(LCD_LINE_DUTY, (uint8_t *)buf);
+    }
 }
 
 /* LED显示函数 - LD1~LD8对应PC13~PC8和其他引脚 */
 void LED_Disp(uint8_t ucLed)
 {
-    /*
-     * 根据你的硬件：
-     * LD1-LD8 连接到 GPIO_PIN_13~8 (PC13, PC14, PC15, PC8, PC9, PC10, PC11, PC12)
-     * 
-     * ucLed的每一位对应一个LED：
-     * bit0 -> LD1 (PC13)
-     * bit1 -> LD2 (PC14)
-     * bit2 -> LD3 (PC15)
-     * bit3 -> LD4 (PC8)
-     * bit4 -> LD5 (PC9)
-     * bit5 -> LD6 (PC10)
-     * bit6 -> LD7 (PC11)
-     * bit7 -> LD8 (PC12)
-     */
-    
-    GPIOC->ODR = ~ucLed << 8;  // 取反并左移8位（因为从PC8开始）
-    
-    /* LED锁存 */
+    GPIOC->ODR = ~ucLed << 8;  
     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_SET);
     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_RESET);
 }
@@ -160,3 +239,4 @@ void LCD_Write(uint8_t RS, uint16_t Value)
 }
 
 /* USER CODE END 2 */
+```

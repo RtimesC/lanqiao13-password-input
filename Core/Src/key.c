@@ -1,39 +1,26 @@
 #include "key.h"
-#include "app.h"
+#include "main.h" // For global variables
 #include "config.h"
 #include "gpio.h"
-#include <stdint.h>
 #include <string.h>
-#include "stm32g4xx_hal.h"
 
-static uint32_t g_key_tick = 0;
-static uint8_t g_key_old[4] = {0};  // B1-B4的上一次状态
+uint8_t key_down = 0;
+uint8_t key_up = 0;
+uint8_t key_value = 0;
+uint8_t key_old = 0; // 上一次扫描的key_value
 
-void KEY_Init(void)
+// 按键扫描，修复原bug（B1和B2引脚冲突）
+void key_read(void)
 {
-    g_key_tick = 0;
+    if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_0) == 0)      key_value = 1;
+    else if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == 0) key_value = 2;
+    else if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == 0) key_value = 3;
+    else if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == 0) key_value = 4;
+    else key_value = 0;
+
+    key_down = key_value & (key_value ^ key_old);    // 按下事件
+    key_up   = ~key_value & (key_value ^ key_old);   // 松开事件
+    key_old  = key_value;   // 保存本次状态
 }
 
-void KEY_Process(void)
-{
-    if (uwTick - g_key_tick < 20)  // 20ms扫描一次
-        return;
-    
-    g_key_tick = uwTick;
-    
-    /* 读取4个按键的当前状态 */
-    uint8_t key_current[4];
-    key_current[0] = !HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_0);  // B1
-    key_current[1] = !HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1);  // B2
-    key_current[2] = !HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2);  // B3
-    key_current[3] = !HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);  // B4
-    
-    /* 边沿检测 */
-    for (int i = 0; i < 4; i++) {
-        if (key_current[i] && !g_key_old[i]) {
-            /* 按键按下 */
-            APP_HandleKeyInput(i + 1);
-        }
-        g_key_old[i] = key_current[i];
-    }
-}
+// 供主循环调用的按键处理任务

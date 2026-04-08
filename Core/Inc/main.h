@@ -59,6 +59,22 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 
 /* USER CODE BEGIN Private defines */
+extern uint8_t system_state;
+extern char current_pwd[4];
+extern char input_pwd[4];
+extern uint32_t led1_on_time;
+extern uint32_t led2_alarm_time;
+extern uint32_t pwm_verify_time;
+extern uint8_t error_count;
+
+extern uint8_t system_state;
+extern char current_pwd[4];
+extern char input_pwd[4];
+extern uint32_t led1_on_time;
+extern uint32_t led2_alarm_time;
+extern uint32_t pwm_verify_time;
+extern uint8_t error_count;
+
 
 /* USER CODE END Private defines */
 

@@ -25,7 +25,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "config.h"
-#include "app.h"
+
 #include "key.h"
 #include "led.h"
 #include "pwm.h"
@@ -51,6 +51,14 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+uint8_t system_state = 0;
+char current_pwd[4] = "123";
+char input_pwd[4] = "@@@";
+uint32_t led1_on_time = 0;
+uint32_t led2_alarm_time = 0;
+uint32_t pwm_verify_time = 0;
+uint8_t error_count = 0;
+
 
 /* USER CODE END PV */
 
@@ -104,7 +112,7 @@ int main(void)
     KEY_Init();
     LED_Init();
     UART_Init();           // ← 启用UART接收中断
-    APP_Init();
+    /* APP_Init removed */
     
     HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
   /* USER CODE END 2 */
@@ -122,7 +130,10 @@ int main(void)
         UART_Process();
         
         /* 应用处理（LED、PWM、LCD） */
-        APP_Process();
+        LED_Process();
+        PWM_Process();
+        LCD_Process();
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

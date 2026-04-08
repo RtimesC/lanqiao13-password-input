@@ -814,3 +814,10 @@ void LCD_DrawPicture(const u8 *picture)
         LCD_WriteRAM(picture[2 * index + 1] << 8 | picture[2 * index]);
     }
 }
+
+// === user code start ===
+#include "main.h"
+#include "config.h"
+#include "pwm.h"
+#include <stdio.h>
+

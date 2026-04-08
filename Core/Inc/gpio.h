@@ -48,6 +48,10 @@ extern uint8_t key_up;
 
 /* LED显示 - 核心硬件函数 */
 void LED_Disp(uint8_t ucLed);
+void KEY_Process(void);
+void LED_Process(void);
+void PWM_Process(void);
+void LCD_Process(void);
 
 /* LCD写 */
 void LCD_Write(uint8_t RS, uint16_t Value);
